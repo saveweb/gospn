@@ -1,2 +1,2 @@
 # gospn
-Save Page Now client in Go
+[Save Page Now](http://web.archive.org/save) client in Go
