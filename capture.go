@@ -34,6 +34,8 @@ func (c Connector) Capture(URL string, options CaptureOptions) (captureResponse 
 	}
 
 	body, _ := io.ReadAll(resp.Body)
+	logger.Debug("Capture response", "status", resp.StatusCode, "body", string(body))
+
 	if resp.StatusCode != 200 {
 		return captureResponse, fmt.Errorf("SPN Capture failed with status code %d, response: %s", resp.StatusCode, body)
 	}
