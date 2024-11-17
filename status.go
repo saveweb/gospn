@@ -110,7 +110,7 @@ func (c *Connector) cachedUserStatusFetcher() {
 		// Make sure we don't fetch the status too often (< 2s)
 		wait := time.Second*2 - time.Since(lastFetch)
 		if wait > 0 {
-			logger.Info("Waiting before fetching user status", "wait", wait)
+			logger.Debug("Waiting before fetching user status", "wait", wait)
 			time.Sleep(wait)
 		}
 
