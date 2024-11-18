@@ -9,7 +9,7 @@ type CaptureOptions struct {
 	// Capture a web page with errors (HTTP status=4xx or 5xx). By default SPN2 captures only status=200 URLs.
 	CaptureAll bool `spn:"capture_all"`
 	// Capture web page outlinks automatically. This also applies to PDF, JSON, RSS and MRSS feeds.
-	CaptureOutlinks bool `spn:"capture_outlinks"`
+	CaptureOutlinks int `spn:"capture_outlinks"`
 	// Capture full page screenshot in PNG format. This is also stored in the Wayback Machine as a different capture.
 	CaptureScreenshot bool `spn:"capture_screenshot"`
 	// The capture becomes available in the Wayback Machine after ~12 hours instead of immediately. This option helps reduce the load on our systems. All API responses remain exactly the same when using this option.
@@ -72,6 +72,8 @@ func (opts CaptureOptions) Encode() url.Values {
 			if value.String() != "" {
 				urlValues.Add(field.Tag.Get("spn"), value.String())
 			}
+		} else if value.Kind() == reflect.Int {
+			urlValues.Add(field.Tag.Get("spn"), string(value.Int()))
 		} else {
 			panic("Unknown field type")
 		}
