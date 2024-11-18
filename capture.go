@@ -11,7 +11,7 @@ import (
 // Capture execute a capture via https://web.archive.org/save
 // and return the response. Options for the capture can be specified
 // when calling the method
-func (c Connector) Capture(URL string, options CaptureOptions) (captureResponse CaptureResponse, err error) {
+func (c *Connector) Capture(URL string, options CaptureOptions) (captureResponse CaptureResponse, err error) {
 	c.GetAvailableCaptureSlot()
 
 	// Build request

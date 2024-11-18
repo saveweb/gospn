@@ -7,7 +7,6 @@ Set environment variable `GOSPN_DEBUG` to `1` to enable debug output.
 
 ```go
 c, _ := spn.Init("YOUR_ACCESS_KEY", "YOUR_SECRET_KEY")
-defer c.Close()
 options := spn.CaptureOptions{
     SkipFirstArchive:    true,
     IfNotArchivedWithin: "3d",

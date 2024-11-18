@@ -11,13 +11,7 @@ type Connector struct {
 	SecretKey               string
 	HTTPClient              *http.Client
 	cachedStatus            *UserStatus
-	cachedStatusFetcherIntr chan bool // to stop the cachedUserStatusFetcher on Close()
-}
-
-func (c *Connector) Close() {
-	logger.Debug("Stopping cachedUserStatusFetcher")
-	c.cachedStatusFetcherIntr <- true
-	logger.Debug("[OK] cachedUserStatusFetcher stopped")
+	cachedStatusLastUpdated time.Time
 }
 
 // CaptureResponse represent the JSON response from SPN
@@ -45,8 +39,6 @@ func Init(accessKey, secretKey string) (Connector, error) {
 		},
 	}
 	connector.cachedStatus = &UserStatus{}
-	connector.cachedStatusFetcherIntr = make(chan bool)
-	go connector.cachedUserStatusFetcher()
 
 	// TODO: test keys validity?
 

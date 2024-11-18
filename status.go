@@ -90,48 +90,40 @@ func (c Connector) GetUserStatus() (userStatus UserStatus, err error) {
 	return userStatus, nil
 }
 
-// Refresh the cached user status in the background
-func (c *Connector) cachedUserStatusFetcher() {
-	logger.Debug("Starting cachedUserStatusFetcher")
-	defer logger.Debug("cachedUserStatusFetcher exited")
-	lastFetch := time.Unix(0, 0)
-	for {
-		select {
-		case <-c.cachedStatusFetcherIntr:
-			return
-		default:
-		}
-
-		if time.Since(lastFetch) < time.Second*10 && c.cachedStatus.Available > 2 {
-			time.Sleep(time.Second)
-			continue
-		}
-
-		// Make sure we don't fetch the status too often (< 2s)
-		wait := time.Second*2 - time.Since(lastFetch)
-		if wait > 0 {
-			logger.Debug("Waiting before fetching user status", "wait", wait)
-			time.Sleep(wait)
-		}
-
-		logger.Debug("Fetching user status")
-
-		lastFetch = time.Now()
-		userStatus, err := c.GetUserStatus()
-		if err != nil {
-			logger.Error("Failed to fetch user status", "error", err)
-			continue
-		}
-
-		logger.Debug("User status fetched", "status", userStatus)
-		c.cachedStatus.Update(userStatus)
-		logger.Debug("cachedStatus updated", "cachedStatus", c.cachedStatus)
+// Refresh the cached user status
+func (c *Connector) refreshCachedUserStatus() {
+	// Skip if we have enough slots and the status was updated less than 10s ago
+	if c.cachedStatus.Available > 2 && time.Since(c.cachedStatusLastUpdated) < time.Second*10 {
+		return
 	}
+
+	// Make sure we don't fetch the status too often (< 2s)
+	wait := time.Second*2 - time.Since(c.cachedStatusLastUpdated)
+	if wait > 0 {
+		logger.Debug("Waiting before fetching user status", "wait", wait)
+		time.Sleep(wait)
+	}
+
+	logger.Debug("Fetching user status")
+
+	c.cachedStatusLastUpdated = time.Now()
+
+	userStatus, err := c.GetUserStatus()
+	if err != nil {
+		logger.Error("Failed to fetch user status", "error", err)
+		return
+	}
+
+	logger.Debug("User status fetched", "status", userStatus)
+	c.cachedStatus.Update(userStatus)
+	logger.Debug("cachedStatus updated", "cachedStatus", c.cachedStatus)
 }
 
 // Wait until a capture slot is available
-func (c Connector) GetAvailableCaptureSlot() (err error) {
+func (c *Connector) GetAvailableCaptureSlot() (err error) {
 	for {
+		c.refreshCachedUserStatus()
+
 		if c.cachedStatus.Available > 0 {
 			c.cachedStatus.Available--
 			c.cachedStatus.Processing++
